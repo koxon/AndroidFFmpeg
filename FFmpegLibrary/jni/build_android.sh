@@ -22,6 +22,11 @@ if [ "$NDK" = "" ]; then
 fi
 
 OS=`uname -s | tr '[A-Z]' '[a-z]'`
+
+# VERSION OF YOUR NDK
+NDK_VERS=4.8
+
+
 function build_x264
 {
 	PLATFORM=$NDK/platforms/$PLATFORM_VERSION/arch-$ARCH/
@@ -343,99 +348,119 @@ EOF
 function build_one {
 	cd ffmpeg
 	PLATFORM=$NDK/platforms/$PLATFORM_VERSION/arch-$ARCH/
-	$PREBUILT/bin/$EABIARCH-ld -rpath-link=$PLATFORM/usr/lib -L$PLATFORM/usr/lib -L$PREFIX/lib  -soname $SONAME -shared -nostdlib  -z,noexecstack -Bsymbolic --whole-archive --no-undefined -o $OUT_LIBRARY -lavcodec -lavformat -lavresample -lavutil -lswresample -lass -lfreetype -lfribidi -lswscale -lvo-aacenc -lvo-amrwbenc -lc -lm -lz -ldl -llog  --warn-once  --dynamic-linker=/system/bin/linker -zmuldefs $PREBUILT/lib/gcc/$EABIARCH/4.4.3/libgcc.a || exit 1
+	$PREBUILT/bin/$EABIARCH-ld -rpath-link=$PLATFORM/usr/lib -L$PLATFORM/usr/lib -L$PREFIX/lib  -soname $SONAME -shared -nostdlib  -z noexecstack -Bsymbolic --whole-archive --no-undefined -o $OUT_LIBRARY -lavcodec -lavformat -lavresample -lavutil -lswresample -lass -lfreetype -lfribidi -lswscale -lvo-aacenc -lvo-amrwbenc -lc -lm -lz -ldl -llog --dynamic-linker=/system/bin/linker -zmuldefs $PREBUILT/lib/gcc/$EABIARCH/$NDK_VERS/libgcc.a || exit 1
 	cd ..
 }
 
-#arm v5
-EABIARCH=arm-linux-androideabi
-ARCH=arm
-CPU=armv5
-OPTIMIZE_CFLAGS="-marm -march=$CPU"
-PREFIX=../ffmpeg-build/armeabi
-OUT_LIBRARY=$PREFIX/libffmpeg.so
-ADDITIONAL_CONFIGURE_FLAG=
-SONAME=libffmpeg.so
-PREBUILT=$NDK/toolchains/arm-linux-androideabi-4.4.3/prebuilt/$OS-x86
-PLATFORM_VERSION=android-5
-build_amr
-build_aac
-build_fribidi
-build_freetype2
-build_ass
-build_ffmpeg
-build_one
+function build_arm5 {
+    #arm v5
+    echo "#### ARM V5 ####";
+    EABIARCH=arm-linux-androideabi
+    ARCH=arm
+    CPU=armv5
+    OPTIMIZE_CFLAGS="-marm -march=$CPU"
+    PREFIX=../ffmpeg-build/armeabi
+    OUT_LIBRARY=$PREFIX/libffmpeg.so
+    ADDITIONAL_CONFIGURE_FLAG=
+    SONAME=libffmpeg.so
+    PREBUILT=$NDK/toolchains/arm-linux-androideabi-$NDK_VERS/prebuilt/$OS-x86
+    PLATFORM_VERSION=android-5
+    build_amr
+    build_aac
+    build_fribidi
+    build_freetype2
+    build_ass
+    build_ffmpeg
+    build_one
+}
 
-#x86
-EABIARCH=i686-linux-android
-ARCH=x86
-OPTIMIZE_CFLAGS="-m32"
-PREFIX=../ffmpeg-build/x86
-OUT_LIBRARY=$PREFIX/libffmpeg.so
-ADDITIONAL_CONFIGURE_FLAG=--disable-asm
-SONAME=libffmpeg.so
-PREBUILT=$NDK/toolchains/x86-4.4.3/prebuilt/$OS-x86
-PLATFORM_VERSION=android-9
-build_amr
-build_aac
-build_fribidi
-build_freetype2
-build_ass
-build_ffmpeg
-build_one
+function build_x86 {
+    #x86
+    echo "#### x86 ####";
+    EABIARCH=i686-linux-android
+    ARCH=x86
+    OPTIMIZE_CFLAGS="-m32"
+    PREFIX=../ffmpeg-build/x86
+    OUT_LIBRARY=$PREFIX/libffmpeg.so
+    ADDITIONAL_CONFIGURE_FLAG=--disable-asm
+    SONAME=libffmpeg.so
+    PREBUILT=$NDK/toolchains/x86-$NDK_VERS/prebuilt/$OS-x86
+    PLATFORM_VERSION=android-9
+    build_amr
+    build_aac
+    build_fribidi
+    build_freetype2
+    build_ass
+    build_ffmpeg
+    build_one
+}
 
-#mips
-EABIARCH=mipsel-linux-android
-ARCH=mips
-OPTIMIZE_CFLAGS="-EL -march=mips32 -mips32 -mhard-float"
-PREFIX=../ffmpeg-build/mips
-OUT_LIBRARY=$PREFIX/libffmpeg.so
-ADDITIONAL_CONFIGURE_FLAG="--disable-mips32r2"
-SONAME=libffmpeg.so
-PREBUILT=$NDK/toolchains/mipsel-linux-android-4.4.3/prebuilt/$OS-x86
-PLATFORM_VERSION=android-9
-build_amr
-build_aac
-build_fribidi
-build_freetype2
-build_ass
-build_ffmpeg
-build_one
+function build_mips {
+    #mips
+    echo "#### MIPS ####";
+    EABIARCH=mipsel-linux-android
+    ARCH=mips
+    OPTIMIZE_CFLAGS="-EL -march=mips32 -mips32 -mhard-float"
+    PREFIX=../ffmpeg-build/mips
+    OUT_LIBRARY=$PREFIX/libffmpeg.so
+    ADDITIONAL_CONFIGURE_FLAG="--disable-mips32r2"
+    SONAME=libffmpeg.so
+    PREBUILT=$NDK/toolchains/mipsel-linux-android-$NDK_VERS/prebuilt/$OS-x86
+    PLATFORM_VERSION=android-9
+    build_amr
+    build_aac
+    build_fribidi
+    build_freetype2
+    build_ass
+    build_ffmpeg
+    build_one
+}
 
-#arm v7vfpv3
-EABIARCH=arm-linux-androideabi
-ARCH=arm
-CPU=armv7-a
-OPTIMIZE_CFLAGS="-mfloat-abi=softfp -mfpu=vfpv3-d16 -marm -march=$CPU "
-PREFIX=../ffmpeg-build/armeabi-v7a
-OUT_LIBRARY=$PREFIX/libffmpeg.so
-ADDITIONAL_CONFIGURE_FLAG=
-SONAME=libffmpeg.so
-PREBUILT=$NDK/toolchains/arm-linux-androideabi-4.4.3/prebuilt/$OS-x86
-PLATFORM_VERSION=android-5
-build_amr
-build_aac
-build_fribidi
-build_freetype2
-build_ass
-build_ffmpeg
-build_one
+function build_armv7a {
+    #arm v7vfpv3
+    echo "#### ARM v7a ####";
+    EABIARCH=arm-linux-androideabi
+    ARCH=arm
+    CPU=armv7-a
+    OPTIMIZE_CFLAGS="-mfloat-abi=softfp -mfpu=vfpv3-d16 -marm -march=$CPU "
+    PREFIX=../ffmpeg-build/armeabi-v7a
+    OUT_LIBRARY=$PREFIX/libffmpeg.so
+    ADDITIONAL_CONFIGURE_FLAG=--disable-asm
+    SONAME=libffmpeg.so
+    PREBUILT=$NDK/toolchains/arm-linux-androideabi-$NDK_VERS/prebuilt/$OS-x86
+    PLATFORM_VERSION=android-5
+    build_amr
+    build_aac
+    build_fribidi
+    build_freetype2
+    build_ass
+    build_ffmpeg
+    build_one
+}
 
-#arm v7 + neon (neon also include vfpv3-32)
-EABIARCH=arm-linux-androideabi
-ARCH=arm
-CPU=armv7-a
-OPTIMIZE_CFLAGS="-mfloat-abi=softfp -mfpu=neon -marm -march=$CPU -mtune=cortex-a8 -mthumb -D__thumb__ "
-PREFIX=../ffmpeg-build/armeabi-v7a-neon
-OUT_LIBRARY=../ffmpeg-build/armeabi-v7a/libffmpeg-neon.so
-ADDITIONAL_CONFIGURE_FLAG=--enable-neon
-SONAME=libffmpeg-neon.so
-PREBUILT=$NDK/toolchains/arm-linux-androideabi-4.4.3/prebuilt/$OS-x86
-PLATFORM_VERSION=android-9
-build_amr
-build_aac
-build_fribidi
-build_freetype2
-build_ass
-build_ffmpeg
-build_one
+function build_arm7 {
+   #arm v7 + neon (neon also include vfpv3-32)
+    echo "#### ARM V7 + neon ####";
+    EABIARCH=arm-linux-androideabi
+    ARCH=arm
+    CPU=armv7-a
+    OPTIMIZE_CFLAGS="-mfloat-abi=softfp -mfpu=neon -marm -march=$CPU -mtune=cortex-a8 -mthumb -D__thumb__ "
+    PREFIX=../ffmpeg-build/armeabi-v7a-neon
+    OUT_LIBRARY=../ffmpeg-build/armeabi-v7a/libffmpeg-neon.so
+    ADDITIONAL_CONFIGURE_FLAG=--enable-neon
+    SONAME=libffmpeg-neon.so
+    PREBUILT=$NDK/toolchains/arm-linux-androideabi-$NDK_VERS/prebuilt/$OS-x86
+    PLATFORM_VERSION=android-9
+    build_amr
+    build_aac
+    build_fribidi
+    build_freetype2
+    build_ass
+    build_ffmpeg
+    build_one 
+}
+
+#build_arm5
+#build_arm7
+build_armv7a
+#build_arm7

@@ -38,6 +38,7 @@ you have to install:
 - pkg-config
 - git
 - svn
+- libtool
 
 on Debian/Ubuntu - you can use apt-get
 
@@ -67,7 +68,7 @@ downloading source code
 	cd AndroidFFmpeg
 	git submodule init
 	git submodule sync #if you are updating source code
-	git submodule update
+	git submodule update # vo-aacenc may fail. Perform 'init', 'sync' and 'update' again. should work
 	cd FFmpegLibrary
 	cd jni
 
@@ -106,7 +107,7 @@ setup vo-amrwbenc environment
 	autoreconf
 	cd ..
 
-build external libraries
+build external libraries. Edit the build_android.sh to update the NDK version.
 
 	export NDK=/your/path/to/android-ndk
 	./build_android.sh
